@@ -7,15 +7,15 @@ from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-api_token = '7057035497:AAGYhEtLC2moprYOkTTGCJdmo7NObqJm8dc'
+api_token = '6820335789:AAFYuQ61sPD6mk-570w5pMZ1lMlLBYvxdFQ'
 
 cities = ['Astana', 'Almaty', 'Shymkent']
 positions = ['Intern', 'Senior', 'Junior']
 
 wb = load_workbook('database.xlsx')
-ws = wb.active
+ws = wb['Сотрудник']
 
-def register(update, context):
+def start(update, context):
     update.message.reply_text("Hello! Please enter your IIN code.")
     context.user_data['state'] = 'waiting_iin'
 
@@ -42,25 +42,28 @@ def handle_input(update, context):
         context.user_data['state'] = 'waiting_father_name'
     elif state == 'waiting_father_name':
         context.user_data['father_name'] = update.message.text
-        update.message.reply_text("Please enter your city:")
-        context.user_data['state'] = 'waiting_city'
-    elif state == 'waiting_city':
         keyboard = [[KeyboardButton(city)] for city in cities]
         reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
-        context.user_data['city'] = update.message.reply_text("Please select your city:", reply_markup=reply_markup)
-        return 'waiting_city_selection'
+        update.message.reply_text("Please choose your city:", reply_markup=reply_markup)
+        context.user_data['state'] = 'waiting_city'
+    elif state == 'waiting_city':
+        context.user_data['city'] = update.message.text
+        update.message.reply_text('Please enter your phone number.')
+        context.user_data['state'] = 'waiting_phone_number'
     elif state == 'waiting_phone_number':
+        message = update.message.text 
         if not re.match(r'^\+\d{11}$', message):
             update.message.reply_text("Invalid phone number. Please try again.")
             return
         context.user_data['phone_number'] = update.message.text
-        update.message.reply_text("Please enter your IBAN.")
-        context.user_data['state'] = 'waiting_position'
-    elif state == 'waiting_position':
         keyboard = [[KeyboardButton(position)] for position in positions]
         reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
         update.message.reply_text("Please select your position:", reply_markup=reply_markup)
-        return 'waiting_position_selection'
+        context.user_data['state'] = 'waiting_position'
+    elif state == 'waiting_position':
+        context.user_data['position'] = update.message.text
+        update.message.reply_text("Please enter your id.")
+        context.user_data['state'] = 'waiting_id'
     elif state == 'waiting_id':
         if not re.match(r'^\d{9}$', message):
             update.message.reply_text("Invalid ID. Please enter a 9-digit number.")
@@ -95,23 +98,19 @@ def save_to_excel(update, context):
     ws.cell(row=row, column=9, value=context.user_data.get('iban'))
     wb.save('database.xlsx')
 
-def handle_city_selection(update, context):
-    selected_city = update.message.text
-    context.user_data['city'] = selected_city
-    update.message.reply_text("Please enter your phone number.")
-    context.user_data['state'] = 'waiting_phone_number'
+# def handle_city_selection(update, context):
+#     update.message.reply_text("Please enter your phone number.")
+#     context.user_data['state'] = 'waiting_phone_number'
 
-def handle_position_selection(update, context):
-    selected_position = update.message.text
-    context.user_data['position'] = selected_position
-    update.message.reply_text("Please enter your ID.")
-    context.user_data['state'] = 'waiting_id'
+# def handle_position_selection(update, context):
+#     update.message.reply_text("Please enter your ID.")
+#     context.user_data['state'] = 'waiting_id'
 
 def main():
     updater = Updater(api_token, use_context=True)
     dp = updater.dispatcher
 
-    dp.add_handler(CommandHandler('register', register))
+    dp.add_handler(CommandHandler('start', start))
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_input))
 
     updater.start_polling()
