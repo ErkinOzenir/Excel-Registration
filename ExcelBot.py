@@ -7,7 +7,7 @@ from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-api_token = '6820335789:AAFYuQ61sPD6mk-570w5pMZ1lMlLBYvxdFQ'
+api_token = None
 
 cities = ['Astana', 'Almaty', 'Shymkent']
 positions = ['Intern', 'Senior', 'Junior']

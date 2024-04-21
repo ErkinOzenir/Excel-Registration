@@ -4,7 +4,7 @@ import pandas as pd
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import ChatAction
 
-api_token = '7054557554:AAHE__umkJVMOZl7MMtpmG-LF78rOrsDCJ0'
+api_token = None
 stored_excel_file = None
 stored_excel_filename = None
 
